@@ -397,3 +397,8 @@ This pipeline calls an external published feature generator:
 
 Please cite/acknowledge that work as appropriate in any downstream publication.
 
+---
+
+## Licenses
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
