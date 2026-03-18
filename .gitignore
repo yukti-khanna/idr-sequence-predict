@@ -1,0 +1,44 @@
+# Outputs
+results/
+work/
+
+# External deps (cloned by setup script)
+external/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Large inputs (recommend ignoring; keep only small examples)
+# If you really want to version big inputs, use Git LFS instead.
+inputs/*.fasta
+inputs/*.fa
+inputs/*.fna
+inputs/*.out.txt
+inputs/*.tsv
+inputs/*.csv
+
+# If you want to keep specific small inputs tracked, add negations like:
+# !inputs/known_tads.fasta
+# !inputs/PTM_list.txt
+
+# Snakemake
+.snakemake/
+
+# Keep small example inputs in git
+!inputs/*.example.fasta
+!inputs/*example*.fasta
+!inputs/*example*.txt
+!inputs/PTM_list.example.txt
+!inputs/known_tads.example.fasta
+!inputs/reference.example.fasta
+
+# Ignore config file
+config/config.yaml
+
+# Local helper scripts for generating examples (do not push)
+scripts/make_example_fasta.py
+scripts/make_example_ptm_list.py

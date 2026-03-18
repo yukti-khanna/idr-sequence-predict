@@ -1,0 +1,30 @@
+idr_mol_feats_repo: "external/idr.mol.feats"
+
+positives_fasta: "inputs/known_tads.fasta"
+reference_fastas:
+  - "inputs/modified_headers_disordered_regions.fasta"
+  - "inputs/tf_modified_headers.fasta"
+concat_reference: true
+
+window:
+  enabled_positives: true
+  enabled_reference: true
+  size: 15
+  step: 1
+  id_mode: "start"
+
+feature_source:
+  mode: "compute"
+  positives_feats: ""
+  reference_feats: ""
+
+ptm_ids: "inputs/PTM_list.txt"
+random_control_n: 200000
+short_mults: [1, 2, 5, 10]
+seed: 0
+
+feature_importance:
+  seed: 0
+  cum_thresholds: [0.90, 0.95]
+
+beta: 0.5

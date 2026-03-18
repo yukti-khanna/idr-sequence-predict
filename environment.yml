@@ -1,0 +1,14 @@
+name: idrseq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - snakemake
+  - numpy
+  - pandas
+  - scikit-learn
+  - imbalanced-learn
+  - matplotlib
+  - pyyaml
+  - pip
