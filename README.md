@@ -3,6 +3,7 @@
 [![Snakemake](https://img.shields.io/badge/snakemake-≥7-blue)](https://snakemake.readthedocs.io)
 [![Conda](https://img.shields.io/badge/conda-environment-green)](environment.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18375255.svg)](https://doi.org/10.5281/zenodo.18375255)
 
 **A reproducible Snakemake pipeline to discover IDR sequence regions similar to a small input set (e.g., TAD-like fragments) across a reference proteome / IDR search space.**
 
@@ -397,3 +398,4 @@ This pipeline calls an external published feature generator:
 
 Please cite/acknowledge that work as appropriate in any downstream publication.
 
+---
