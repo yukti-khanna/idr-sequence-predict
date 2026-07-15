@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import itertools
-from pathlib import Path
 import numpy as np
 import pandas as pd
 
@@ -11,18 +10,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.metrics import f1_score, recall_score, precision_score, fbeta_score
+from sklearn.metrics import f1_score, recall_score, fbeta_score
 
-import json
 from hparams_utils import load_json, save_json, deep_get, deep_set
-
-def load_drop_cols(feats: int, drop_dir: str) -> list[str]:
-    p = Path(drop_dir) / f"drop_cols_{feats}.json"
-    return json.loads(p.read_text())
+from make_drop_cols_from_selected import ensure_drop_cols
 
 
-def load_bucket_table(path: str, feats: int, drop_dir: str):
-    df = pd.read_csv(path).replace([np.inf, -np.inf], np.nan).fillna(0)
+def load_bucket_table(path: str, feats: int, feature_dir: str):
+    df = pd.read_csv(path, sep=None, engine="python").replace([np.inf, -np.inf], np.nan).fillna(0)
     if "CLASS" not in df.columns:
         raise ValueError(f"{path} missing CLASS")
     if "NAME" in df.columns:
@@ -32,7 +27,7 @@ def load_bucket_table(path: str, feats: int, drop_dir: str):
     y = df["CLASS"].astype(int).values
     Xdf = df.drop(["CLASS"], axis=1, errors="ignore")
 
-    drop_cols = load_drop_cols(feats, drop_dir)
+    drop_cols = ensure_drop_cols(path, feats, feature_dir)
     Xdf = Xdf.drop(drop_cols, axis=1, errors="ignore")
 
     if Xdf.shape[1] != feats:
@@ -64,21 +59,19 @@ def main():
 
     cache = load_json(args.out)
 
-    # Shorts buckets
-    mults = [1,2,5,10]
-    tags = ["PTM","Random"]
-    feats_list = [69,126]
-    criteria = ["f1","max_recall","fbeta"]
+    mults = [1, 2, 5, 10]
+    tags = ["PTM", "Random"]
+    feats_list = [69, 126]
+    criteria = ["f1", "max_recall", "fbeta"]
 
-    # Grid (small)
     lr_grid = []
     for solver in ["lbfgs", "liblinear"]:
         if solver == "lbfgs":
-            for C in [0.1,1,10]:
+            for C in [0.1, 1, 10]:
                 lr_grid.append(dict(solver=solver, penalty="l2", C=C))
         else:
-            for penalty in ["l1","l2"]:
-                for C in [0.1,1,10]:
+            for penalty in ["l1", "l2"]:
+                for C in [0.1, 1, 10]:
                     lr_grid.append(dict(solver=solver, penalty=penalty, C=C))
 
     sgd_grid = []
@@ -92,9 +85,8 @@ def main():
 
     def bucket_file(tag: str, mult: int) -> str:
         if tag == "PTM":
-            return f"{args.data_dir}/ptms_short.txt" if mult==1 else f"{args.data_dir}/ptms_short{mult}.txt"
-        else:
-            return f"{args.data_dir}/random_short.txt" if mult==1 else f"{args.data_dir}/random_short{mult}.txt"
+            return f"{args.data_dir}/ptms_short.txt" if mult == 1 else f"{args.data_dir}/ptms_short{mult}.txt"
+        return f"{args.data_dir}/random_short.txt" if mult == 1 else f"{args.data_dir}/random_short{mult}.txt"
 
     for crit in criteria:
         for tag in tags:
@@ -113,14 +105,13 @@ def main():
                     best = {"logreg": None, "scaled_sgdc": None, "partial_fit_sgdc": None}
                     best_score = {"logreg": -1, "scaled_sgdc": -1, "partial_fit_sgdc": -1}
 
-                    # Logistic search
                     for hp in lr_grid:
                         model = Pipeline([
                             ("scaler", StandardScaler()),
                             ("clf", LogisticRegression(
                                 solver=hp["solver"], penalty=hp["penalty"], C=hp["C"],
                                 max_iter=2000, random_state=args.random_state
-                            ))
+                            )),
                         ])
                         model.fit(Xtr, ytr)
                         pred = model.predict(Xte)
@@ -129,8 +120,6 @@ def main():
                             best_score["logreg"] = s
                             best["logreg"] = hp
 
-                    # SGD search (use same grid for scaled + partial_fit entry; training method differs,
-                    # but final model is SGDClassifier anyway. We'll store separate entries for clarity.)
                     for hp in sgd_grid:
                         model = Pipeline([
                             ("scaler", StandardScaler()),
@@ -141,8 +130,8 @@ def main():
                                 l1_ratio=hp["l1_ratio"],
                                 max_iter=2000,
                                 random_state=args.random_state,
-                                tol=1e-3
-                            ))
+                                tol=1e-3,
+                            )),
                         ])
                         model.fit(Xtr, ytr)
                         pred = model.predict(Xte)
